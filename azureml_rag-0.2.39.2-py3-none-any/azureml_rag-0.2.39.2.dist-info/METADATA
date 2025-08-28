@@ -1,0 +1,678 @@
+Metadata-Version: 2.4
+Name: azureml-rag
+Version: 0.2.39.2
+Summary: Contains Retrieval Augmented Generation related utilities for Azure Machine Learning and OSS interoperability.
+Home-page: https://docs.microsoft.com/python/api/overview/azure/ml/?view=azure-ml-py
+Author: Microsoft Corporation
+License: Proprietary https://aka.ms/azureml-preview-sdk-license 
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: Other/Proprietary License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.9,<4.0
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: azureml-dataprep[parquet]>=5.1
+Requires-Dist: azureml-fsspec
+Requires-Dist: fsspec~=2023.3
+Requires-Dist: openai>=0.27.8
+Requires-Dist: tiktoken<1.0,>=0.7
+Requires-Dist: cloudpickle
+Requires-Dist: mmh3
+Requires-Dist: pyyaml<7.0.0,>=5.1.0
+Requires-Dist: requests
+Requires-Dist: azureml-core~=1.60
+Provides-Extra: azure
+Requires-Dist: azure-ai-ml<2.0.0,>=1.23.0; extra == "azure"
+Requires-Dist: azure-identity>=1.17.0; extra == "azure"
+Provides-Extra: azureml-core
+Requires-Dist: azureml-core; extra == "azureml-core"
+Requires-Dist: azureml-telemetry; extra == "azureml-core"
+Requires-Dist: azureml-mlflow; extra == "azureml-core"
+Provides-Extra: faiss
+Requires-Dist: faiss-cpu; extra == "faiss"
+Provides-Extra: cognitive-search
+Requires-Dist: azure-search-documents>=11.4.0; extra == "cognitive-search"
+Provides-Extra: pinecone
+Requires-Dist: pinecone-client<7.0.0,>=6.0.0; extra == "pinecone"
+Requires-Dist: langchain-pinecone<0.3.0,>=0.2.0; extra == "pinecone"
+Provides-Extra: azure-cosmos-mongo-vcore
+Requires-Dist: pymongo; extra == "azure-cosmos-mongo-vcore"
+Provides-Extra: azure-cosmos-nosql
+Requires-Dist: azure-cosmos>=4.7.0; extra == "azure-cosmos-nosql"
+Provides-Extra: milvus
+Requires-Dist: pymilvus>=2.3.0; extra == "milvus"
+Provides-Extra: mongodb
+Requires-Dist: pymongo; extra == "mongodb"
+Provides-Extra: elasticsearch
+Requires-Dist: elasticsearch<9.0,>=8.12.0; extra == "elasticsearch"
+Provides-Extra: weaviate
+Requires-Dist: weaviate-client>=4.0.0; extra == "weaviate"
+Provides-Extra: qdrant
+Requires-Dist: qdrant-client<2.0.0,>=1.8.0; extra == "qdrant"
+Requires-Dist: langchain-qdrant; extra == "qdrant"
+Provides-Extra: hugging-face
+Requires-Dist: scikit-learn; extra == "hugging-face"
+Requires-Dist: sentence-transformers; extra == "hugging-face"
+Requires-Dist: huggingface-hub>=0.25.1; extra == "hugging-face"
+Provides-Extra: langchain
+Requires-Dist: langchain<0.4.0,>=0.3.0; extra == "langchain"
+Requires-Dist: langchain-community<0.4.0,>=0.3.0; extra == "langchain"
+Provides-Extra: document-parsing
+Requires-Dist: pandas>=1; extra == "document-parsing"
+Requires-Dist: nltk~=3.9.1; extra == "document-parsing"
+Requires-Dist: markdown; extra == "document-parsing"
+Requires-Dist: beautifulsoup4~=4.11.2; extra == "document-parsing"
+Requires-Dist: tika~=2.6.0; extra == "document-parsing"
+Requires-Dist: pypdf~=3.17.1; extra == "document-parsing"
+Requires-Dist: unstructured; extra == "document-parsing"
+Requires-Dist: GitPython>=3.1; extra == "document-parsing"
+Requires-Dist: azure-ai-formrecognizer; extra == "document-parsing"
+Provides-Extra: data-generation
+Requires-Dist: pandas>=1; extra == "data-generation"
+Requires-Dist: beautifulsoup4~=4.11.2; extra == "data-generation"
+Requires-Dist: lxml~=4.9.2; extra == "data-generation"
+Requires-Dist: azure-ai-ml<2.0.0,>=1.23.0; extra == "data-generation"
+Provides-Extra: remote-tests
+Requires-Dist: pytest; extra == "remote-tests"
+Requires-Dist: pytest-xdist; extra == "remote-tests"
+Requires-Dist: azure-ai-ml<2.0.0,>=1.23.0; extra == "remote-tests"
+Requires-Dist: azure-cli; extra == "remote-tests"
+Requires-Dist: azure-core!=1.22.0,<2.0.0,>=1.8.0; extra == "remote-tests"
+Requires-Dist: azure-mgmt-core<2.0.0,>=1.3.0; extra == "remote-tests"
+Requires-Dist: azure-keyvault-secrets>=4.6.0; extra == "remote-tests"
+Provides-Extra: local-tests
+Requires-Dist: pytest; extra == "local-tests"
+Requires-Dist: wikipedia; extra == "local-tests"
+Requires-Dist: pytest-cov; extra == "local-tests"
+Provides-Extra: validate-deployments
+Requires-Dist: azure-mgmt-cognitiveservices>13.0.0; extra == "validate-deployments"
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# AzureML Retrieval Augmented Generation Utilities
+
+This package is in alpha stage at the moment, use at risk of breaking changes and unstable behavior.
+
+It contains utilities for:
+
+- Processing text documents into chunks appropriate for use in LLM prompts, with metadata such is source url.
+- Embedding chunks with OpenAI or HuggingFace embeddings models, including the ability to update a set of embeddings over time.
+- Create MLIndex artifacts from embeddings, a yaml file capturing metadata needed to deserialize different kinds of Vector Indexes for use in langchain. Supported Index types:
+  - FAISS index (via langchain)
+  - Azure Cognitive Search index
+  - Pinecone index
+  - Milvus index
+  - Azure Cosmos Mongo vCore index
+  - MongoDB
+
+## Getting started
+
+You can install AzureMLs RAG package using pip.
+
+```bash
+pip install azureml-rag
+```
+
+There are various extra installs you probably want to include based on intended use:
+- `faiss`: When using FAISS based Vector Indexes
+- `cognitive_search`: When using Azure Cognitive Search Indexes
+- `pinecone`: When using Pinecone Indexes
+- `azure_cosmos_mongo_vcore`: When using Azure Cosmos Mongo vCore Indexes
+- `hugging_face`: When using Sentence Transformer embedding models from HuggingFace (local inference)
+- `document_parsing`: When cracking and chunking documents locally to put in an Index
+- `mongodb`: When using native mongo db indexes
+
+## MLIndex
+
+MLIndex files describe an index of data + embeddings and the embeddings model used in yaml.
+
+Azure Cognitive Search Index:
+
+```yaml
+embeddings:
+  dimension: 768
+  kind: hugging_face
+  model: sentence-transformers/all-mpnet-base-v2
+  schema_version: '2'
+index:
+  api_version: 2021-04-30-Preview
+  connection:
+    id: /subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.MachineLearningServices/workspaces/<workspace>/connections/<acs_connection_name>
+  connection_type: workspace_connection
+  endpoint: https://<acs_name>.search.windows.net
+  engine: azure-sdk
+  field_mapping:
+    content: content
+    filename: filepath
+    metadata: meta_json_string
+    title: title
+    url: url
+    embedding: contentVector
+  index: azureml-rag-test-206e03b6-3880-407b-9bc4-c0a1162d6c70
+  kind: acs
+```
+
+Pinecone Index:
+
+```yaml
+embeddings:
+  dimension: 768
+  kind: hugging_face
+  model: sentence-transformers/all-mpnet-base-v2
+  schema_version: '2'
+index:
+  connection:
+    id: /subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.MachineLearningServices/workspaces/<workspace>/connections/<pinecone_connection_name>
+  connection_type: workspace_connection
+  engine: pinecone-sdk
+  field_mapping:
+    content: content
+    filename: filepath
+    metadata: metadata_json_string
+    title: title
+    url: url
+  index: azureml-rag-test-206e03b6-3880-407b-9bc4-c0a1162d6c70
+  kind: pinecone
+```
+
+Azure Cosmos Mongo vCore Index:
+
+```yaml
+embeddings:
+  dimension: 768
+  kind: hugging_face
+  model: sentence-transformers/all-mpnet-base-v2
+  schema_version: '2'
+index:
+  connection:
+    id: /subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.MachineLearningServices/workspaces/<workspace>/connections/<cosmos_connection_name>
+  connection_type: workspace_connection
+  engine: pymongo-sdk
+  field_mapping:
+    content: content
+    filename: filepath
+    metadata: metadata_json_string
+    title: title
+    url: url
+    embedding: contentVector
+  database: azureml-rag-test-db
+  collection: azureml-rag-test-collection
+  index: azureml-rag-test-206e03b6-3880-407b-9bc4-c0a1162d6c70
+  kind: azure_cosmos_mongo_vcore
+```
+
+### Create MLIndex
+
+Examples using MLIndex remotely with AzureML and locally with langchain live here: https://github.com/Azure/azureml-examples/tree/main/sdk/python/generative-ai/rag
+
+### Consume MLIndex
+
+```python
+from azureml.rag.mlindex import MLIndex
+
+retriever = MLIndex(uri_to_folder_with_mlindex).as_langchain_retriever()
+retriever.get_relevant_documents('What is an AzureML Compute Instance?')
+```
+
+
+# Changelog
+
+Please insert change log into "Next Release" ONLY.
+
+## Next release
+
+## 0.2.39.1
+
+- Set local cache directory before cache check
+
+## 0.2.39
+
+- Bug should not download tiktoken Byte Pair Encoding (BPE) files from internet
+
+## 0.2.38
+
+- Bug fix in using user managed identity (UMI) in endpoint
+
+## 0.2.37.3
+
+- Update tiktoken to >= 0.7.
+
+## 0.2.37.2
+
+- Fix PydanticUndefinedAnnotation: name 'AzureSearch' is not defined
+- Remove Python 3.8 support
+
+## 0.2.37.1
+
+- Upgrade nltk to >=3.9.1, <4.0
+
+## 0.2.37
+
+- Upgrade langchain to 0.3.x
+- Upgrade langchain-community to 0.3.x
+- Upgrade langchain-pinecone to 0.2.x
+- Upgrade pinecone-client to 5.0.x
+
+## 0.2.36
+
+- Implement mongodb vector store and ml index supports
+- Detect OBO credential with AZUREML_OBO_ENABLED environment variable
+- ACS update on changed (new or deleted) documents
+- Drop azure-search-documents 11.4.0 beta version support
+
+## 0.2.35
+
+- Implement cosmosdb for nosql vector store and ml index supports
+- Relax langchain version constraint
+- Upgraded langchain-pinecone version to 0.1.1 and pinecone-client version
+
+## 0.2.34
+
+- Update azure-ai-ml version to 1.16.1 by introducing noneCredentialConfigure and add authType for AadCredentialConfigure
+- Use set of exceptions as retry_exceptions in backoff_retry_on_exceptions
+
+## 0.2.33
+
+- Support existing qdrant indices
+- Mitigate PF failure while more than 3 lookup tools used in a flow
+- Add the retry for the embedder if there was a successfully embedding
+
+## 0.2.32
+
+- Implement langchain weaviate vectorstore in mlindex
+- Get connection in `get_connection_by_id_v2` with caller specified credential
+- Set upper bound for `azure-ai-ml` to 1.15.0
+
+## 0.2.31.1
+
+- Update search index with azure-search-documents 11.4.0
+- Add azureml-core in the dependency list
+
+## 0.2.31
+
+- Categorize user error and system error, and update RH accordingly to show in logs
+- Bugfix using obo credential for AAD connections.
+- Prevention fix to support AadCredentialConfig in Connection object
+- Update Pinecone legacy API
+- Creating image embedding index with azure-search-documents 11.4.0
+
+## 0.2.30.2
+
+- Bugfix remove azure_ad_token_provider from EmbeddingContainer metadata
+- Set embeddings_model as optional argument
+
+## 0.2.30.1
+
+- Introduce `elasticsearch` extra to declare transitive dependency on the `elasticsearch` package when using Elasticsearch indices.
+
+## 0.2.30
+
+- Bugfix in models.py to handle empty deployment name.
+- Supporting existing elasticsearch indices
+- Bug fix in `crack_and_chunk_and_embed_and_index`
+- Fixing bug in using AAD auth type ACS connections.
+
+## 0.2.29.2
+
+- Fixing ACS index creation failure with azure-search-documents 11.4.0
+
+## 0.2.29.1
+
+- Fixing FAISS, dependable_faiss_import import failure with Langchain 0.1.x
+
+## 0.2.29
+
+- Support AAD and MSI auth type in AOAI, ACS connection
+
+## 0.2.28
+
+- Ensure compatibility with newer versions of azure-ai-ml.
+- Upgrade langchain to support up to 0.1
+
+## 0.2.27
+
+- Support Cohere serverless endpoint
+- Support multiple ACS lookups in the same process, eliminating field mapping conflicts
+- Support pass-in credential in get_connection_by_name_v2 to unblock managed vNet setup
+- Update validate_deployments in crack_chunk_embed_index_and_register.py
+
+## 0.2.26
+
+- Support for .csv and .json file extensions in pipeline
+- Ignore mlflow.exceptions.RestException in safe_mlflow_log_metric
+- validate_deployments supports openai v1.0+
+- Removing unexpected keyword argument 'engine'
+- Checking ACS account has enough index quota
+- infer_deployment supports openai v1.0+
+- Create missing fields for existing index
+
+## 0.2.25
+
+- Using local cached encodings.
+- Adding convert_to_dict() for openai v1.0+
+- Check index_config before passing in validate_deployments.py
+- Limit size of documents upload to ACS in one batch to solve RequestEntityTooLargeError
+
+## 0.2.24.2
+
+- Supporting `*.cognitiveservices.*` endpoint
+- Adding azureml-rag specific user_agent when using DocumentIntelligence
+- Refactored update index tasks
+- Supporting uppercase file extensions name in crack_and_chunk
+- Fixing Deployment importing bug in utils
+- Adding the playgroundType tag in MLIndex Asset used for Azure AI studio playground
+- Remove mandatory module-level imports of optional extra packages
+
+## 0.2.24.1
+
+- Fixing is_florence key detection
+- Using 'embedding_connection_id' instead of 'florence_connection_id' as parameter name
+
+## 0.2.24
+
+- Introducing image ingestion with florence embedding API
+- Adding dummy output to validate_deployments for holding the right order
+- Fixing DeploymentNotFound bug
+
+## 0.2.23.5
+
+- Deprecate pkg_resources in logging.py (https://setuptools.pypa.io/en/latest/pkg_resources.html)
+
+## 0.2.23.4
+
+- Make the `api_type` parameter non-case sensitive in OpenAIEmbedder
+- Bug fix in embeddings container path
+
+## 0.2.23.3
+
+- Set upper bound for `langchain` to 0.0.348
+
+## 0.2.23.2
+
+- Make tiktoken pull from a cache instead of making the outgoing network call to get encodings files
+- Add support for Azure Cosmos Mongo vCore
+
+## 0.2.23.1
+
+- Fixing exception handling in validate_deployments to support OpenAI v1.0+
+
+## 0.2.23
+
+- Support OpenAI v1.0 +
+- Handle FAISS.load_local() change since Langchain 0.0.318
+- Handle mailto links in url crawling component.
+- Add support for Milvus vector store
+
+## 0.2.22
+
+- update pypdf's version to 3.17.1 in document-parsing.
+
+## 0.2.21
+
+- Use workspace connection tags instead of metadata since it's deprecated.
+- Fix bug handling single files in `files_to_document_sources`
+
+## 0.2.20
+
+- Initial introduction of validate_deployments.
+- Asset registration in \*\_and_register attempts to infer target workspace from asset_uri and handle multiple auth options
+- activity_logger moved out as first arg, this is an intermediate step as logger also shouldn't be first arg and instead handled by get_logger, activity_logger should be truly optional.
+- validate_deployments itself was modified to make its interface closer to what existing tasks expect as input, and callable from other tasks as a function.
+
+## 0.2.19
+
+- Introduce a new `path` parameter in the `index` section of MLIndex documents over FAISS indices, to allow the path to FAISS index files to be different from the MLIndex document path.
+- Ensure `MLIndex.base_uri` is never undefined for a valid MLIndex object.
+
+## 0.2.18.1
+
+- Only save out metadata before embedding in crack_and_chunk_and_embed_and_index
+- Update create_embeddings to return num_embedded value.
+  - This enables crack_and_chunk_and_embed to skip loading EmbeddedDocument partitions when no documents were embedded (all reused).
+
+## 0.2.18
+
+- Add new task to crack, chunk, embed, index to ACS, and register MLIndex in one step.
+- Handle `openai.api_type` being `None`
+
+## 0.2.17
+
+- Fix loading MLIndex failure. Don't need to get the `endpoint` from connection when it is already provided.
+- Try use `langchain` VectorStore and fallback to vendor
+- Support `azure-search-documents==11.4.0b11``
+- Add support for Pinecone in DataIndex
+
+## 0.2.16
+
+- Use Retry-After when aoai embedding endpoint throws RateLimitError
+
+## 0.2.15.1
+
+- Fix vendored FAISS langchain VectorStore to only error when a doc is `None` (rather than when a Document isn't exactly the right class)
+
+## 0.2.15
+
+- Support PDF cracking with Azure Document Intelligence service
+- `crack_and_chunk_and_embed` now pulls documents through to embedding (streaming) and embeds documents in parallel batches
+- Update default field names.
+- Fix long file name bug when writing to output during crack and chunk
+
+## 0.2.14
+
+- Fix git_clone to handle WorkspaceConnections, again.
+
+## 0.2.13
+
+- Fix git_clone to handle WorkspaceConnection objects and urls with usernames already in them.
+
+## 0.2.12
+
+- Only process `.jsonl` and `.csv` files when reading chunks for embedding.
+
+## 0.2.11
+
+- Check casing for model kind and api_type
+- Ensure api_version not being set is supported and default make sense.
+- Add support for Pinecone indexes
+
+## 0.2.10
+
+- Fix QA generator and connections check for ApiType metadata
+
+## 0.2.9
+
+- QA data generation accepts connection as input
+
+## 0.2.8
+
+- Remove `allowed_special="all"` from tiktoken usage as it encodes special tokens like `<|endoftext|>` as their special token rather then as plain text (which is the case when only `disallowed_special=()` is set on its own)
+- Stop truncating texts to embed (to model ctx length) as new `azureml.rag.embeddings.OpenAIEmbedder` handles batching and splitting long texts pre-embed then averaging the results into a single final embedding.
+- Loosen tiktoken version range from `~=0.3.0` to `<1`
+
+## 0.2.7
+
+- Don't try and use MLClient for connections if azure-ai-ml<1.10.0
+- Handle Custom Conenctions which azure-ai-ml can't deserialize today.
+- Allow passing faiss index engine to MLIndex local
+- Pass chunks directly into write_chunks_to_jsonl
+
+## 0.2.6
+
+- Fix jsonl output mode of crack_and_chunk writing csv internally.
+
+## 0.2.5
+
+- Ensure EmbeddingsContainer.mount_and_load sets `create_destination=True` when mounting to create embeddings_cache location if it's not already created.
+- Fix `safe_mlflow_start_run` to `yield None` when mlflow not available
+- Handle custom `field_mappings` passed to `update_acs` task.
+
+## 0.2.4
+
+- Introduce `crack_and_chunk_and_embed` task which tracks deletions and reused source + documents to enable full sync with indexes, levering EmbeddingsContainer for storage of this information across Snapshots.
+- Restore `workspace_connection_to_credential` function.
+
+## 0.2.3
+
+- Fix git clone url format bug
+
+## 0.2.2
+
+- Fix all langchain splitter to use tiktoken in an airgap friendly way.
+
+## 0.2.1
+
+- Introduce DataIndex interface for scheduling Vector Index Pipeline in AzureML and creating MLIndex Assets
+- Vendor various langchain components to avoid breaking changes to MLIndex internal logic
+
+## 0.1.24.2
+
+- Fix all langchain splitter to use tiktoken in an airgap friendly way.
+
+## 0.1.24.1
+
+- Fix subsplitter init bug in MarkdownHeaderSplitter
+- Support getting langchain retriever for ACS based MLIndex with embeddings.kind: none.
+
+## 0.1.24
+
+- Don't mlflow log unless there's an active mlflow run.
+- Support `langchain.vectorstores.azuresearch` after `langchain>=0.0.273` upgraded to `azure-search-documents==11.4.0b8`
+- Use tiktoken encodings from package for other splitter types
+
+## 0.1.23.2
+
+- Handle `Path` objects passed into `MLIndex` init.
+
+## 0.1.23.1
+
+- Handle <region>.api.cognitive style aoai endpoints correctly
+
+## 0.1.23
+
+- Ensure tiktoken encodings are packaged in wheel
+
+## 0.1.22
+
+- Set environment variables to pull encodings files from directory with cache key to avoid tiktoken external network call
+- Fix mlflow log error when there's no files input
+
+## 0.1.21
+
+- Fix top level imports in `update_acs` task failing without helpful reason when old `azure-search-documents` is installed.
+
+## 0.1.20
+
+- Fix Crack'n'Chunk race-condition where same named files would overwrite each other.
+
+## 0.1.19
+
+- Various bug fixes:
+  - Handle some malformed git urls in `git_clone` task
+  - Try fall back when parsing csv with pandas fails
+  - Allow chunking special tokens
+  - Ensure logging with mlflow can't fail a task
+- Update to support latest `azure-search-documents==11.4.0b8`
+
+## 0.1.18
+
+- Add FaissAndDocStore and FileBasedDocStore which closely mirror langchains' FAISS and InMemoryDocStore without the langchain or pickle dependency. These are default not used until PromptFlow support has been added.
+- Pin `azure-documents-search==11.4.0b6` as there's breaking changes in `11.4.0b7` and `11.4.0b8`
+
+## 0.1.17
+
+- Update interactions with Azure Cognitive Search to use latest azure-documents-search SDK
+
+## 0.1.16
+
+- Convert api_type from Workspace Connections to lower case to appease langchains case sensitive checking.
+
+## 0.1.15
+
+- Add support for custom loaders
+- Added logging for MLIndex.**init** to understand usage of MLindex
+
+## 0.1.14
+
+- Add Support for CustomKeys connections
+- Add OpenAI support for QA Gen and Embeddings
+
+## 0.1.13 (2023-07-12)
+
+- Implement single node non-PRS embed task to enable clearer logs for users.
+
+## 0.1.12 (2023-06-29)
+
+- Fix casing check of ApiVersion, ApiType in infer_deployment util
+
+## 0.1.11 (2023-06-28)
+
+- Update casing check for workspace connection ApiVersion, ApiType
+- int casting for temperature, max_tokens
+
+## 0.1.10 (2023-06-26)
+
+- Update data asset registering to have adjustable output_type
+- Remove asset registering from generate_qa.py
+
+## 0.1.9 (2023-06-22)
+
+- Add `azureml.rag.data_generation` module.
+- Fixed bug that would cause crack_and_chunk to fail for documents that contain non-utf-8 characters. Currently these characters will be ignored.
+- Improved heading extraction from Markdown files. When `use_rcts=False` Markdown files will be split on headings and each chunk with have the heading context up to the root as a prefix (e.g. `# Heading 1\n## Heading 2\n# Heading 3\n{content}`)
+
+## 0.1.8 (2023-06-21)
+
+- Add deployment inferring util for use in azureml-insider notebooks.
+
+## 0.1.7 (2023-06-08)
+
+- Improved telemetry for tasks (used in RAG Pipeline Components)
+
+## 0.1.6 (2023-05-31)
+
+- Fail crack_and_chunk task when no files were processed (usually because of a malformed `input_glob`)
+- Change `update_acs.py` to default `push_embeddings=True` instead of `False`.
+
+## 0.1.5 (2023-05-19)
+
+- Add api_base back to MLIndex embeddings config for back-compat (until all clients start getting it from Workspace Connection).
+- Add telemetry for tasks used in pipeline components, not enabled by default for SDK usage.
+
+## 0.1.4 (2023-05-17)
+
+- Fix bug where enabling rcts option on split_documents used nltk splitter instead.
+
+## 0.1.3 (2023-05-12)
+
+- Support Workspace Connection based auth for Git, Azure OpenAI and Azure Cognitive Search usage.
+
+## 0.1.2 (2023-05-05)
+
+- Refactored document chunking to allow insertion of custom processing logic
+
+## 0.0.1 (2023-04-25)
+
+### Features Added
+
+- Introduced package
+- langchain Retriever for Azure Cognitive Search

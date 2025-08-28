@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "OPENAI_API_KEY": "your-openai-api-key",
+    "OPENAI_ENDPOINT": "https://your-openai-resource.openai.azure.com/",
+    "OPENAI_API_VERSION": "2024-02-01",
+    "OPENAI_EMBEDDING_MODEL": "text-embedding-ada-002",
+    "SEARCH_SERVICE_ENDPOINT": "https://your-search-service.search.windows.net",
+    "SEARCH_SERVICE_KEY": "your-search-service-key",
+    "SEARCH_INDEX_NAME": "your-index-name"
+  }
+}
